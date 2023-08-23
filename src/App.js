@@ -5,6 +5,7 @@ const App = ()  => {
     const [users, setUsers] = useState([])
     const [name,setName] = useState([])
     const [edit,setEdit] = useState(null)
+
     useEffect(() => {
         axios('https://64e2ef8fbac46e480e77edf1.mockapi.io/users/users')
             .then(({data}) => setUsers(data))
@@ -24,12 +25,20 @@ const App = ()  => {
         })
     }
     const handleAddUser = (e) => {
-        e.preventDefault()  
+        e.preventDefault()
         if (edit) {
             const newData = {...edit,name}
-            axios.put(`https://64e2ef8fbac46e480e77edf1.mockapi.io/users/users/${user.id}`, newData)
+            axios.put(`https://64e2ef8fbac46e480e77edf1.mockapi.io/users/users/${edit.id}`, newData)
                 .then(({data}) => {
-                    set
+                    setUsers(users.map(user => user.id === data.id ? data : user))
+                    setName('')
+                    setEdit(null)
+                })
+        }else {
+            axios.post('https://64e2ef8fbac46e480e77edf1.mockapi.io/users/users',{name})
+                .then(({data}) => {
+                    setUsers([...users,data])
+                    setName('')
                 })
         }
     }
@@ -43,8 +52,12 @@ const App = ()  => {
            <form onSubmit={handleAddUser}>
                <input
                       value={name}
-                      onChange={(e) => setName(e.target.value)} type='text'/>
-               <button type={'submit'}>Add user</button>
+                      onChange={(e) => setName(e.target.value)}
+                      type='text'
+               />
+               <button type={'submit'}>
+                   {edit ? 'edit true' : 'Add user'}
+               </button>
            </form>
             {
                 users.map(user => {
@@ -53,10 +66,10 @@ const App = ()  => {
                             <h2>{user.name}</h2>
                             <p>{user.email}</p>
                             <input type='checkbox'
-                                   onChange={(e) => handleChange(e,user)} checked={user.hired}
+                                   onChange={(e) => handleChange(e,user)}  checked={user.hired}
                             />
                             <button onClick={() => handleDelete(user)}>Delete</button>
-                            <button onClick={() => handleOther(user.name)}>Edit</button>
+                            <button onClick={() => handleOther(user)}>Edit</button>
                         </div>
                         )
                 })
